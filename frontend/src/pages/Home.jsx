@@ -1,0 +1,268 @@
+﻿import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import duyananBg from '../assets/img/duyanan_bg.jpg';
+import sfcImg from '../assets/img/sfc.png';
+import habhabImg from '../assets/img/habhab.jpg';
+
+const carouselSlides = [
+    {
+        img: sfcImg,
+        tag: '🍗 Best Seller',
+        title: 'Sizzling Fried Chicken',
+        desc: 'Crispy on the outside, juicy on the inside — a Duyanan classic.',
+        price: '₱109',
+    },
+    {
+        img: habhabImg,
+        tag: '🍜 Local Favorite',
+        title: 'Pancit Habhab',
+        desc: 'Authentic Lucban noodles tossed in savory sauce, served the traditional way.',
+        price: '₱250',
+    },
+    {
+        img: duyananBg,
+        tag: '🌿 Dine With Us',
+        title: 'A Place to Gather',
+        desc: 'Enjoy Filipino comfort food in a warm, relaxing atmosphere.',
+        price: null,
+    },
+];
+
+const Home = ({ onOpenReservation }) => {
+    const [activeSlide, setActiveSlide] = useState(0);
+
+    const goTo = useCallback((index) => {
+        setActiveSlide((index + carouselSlides.length) % carouselSlides.length);
+    }, []);
+
+    // Auto-advance every 4 seconds
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setActiveSlide(prev => (prev + 1) % carouselSlides.length);
+        }, 4000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const slide = carouselSlides[activeSlide];
+
+    return (
+        <div>
+            {/* Hero Section */}
+            <header
+                style={{
+                    backgroundImage: `url(${duyananBg})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    minHeight: '100vh',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    color: '#fff',
+                    textAlign: 'center',
+                    paddingTop: 'var(--nav-height)'
+                }}
+            >
+                {/* Overlay */}
+                <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'linear-gradient(160deg, rgba(0,0,0,0.35) 0%, rgba(110,44,0,0.4) 100%)'
+                }} />
+
+                <div className="container position-relative" style={{ zIndex: 1 }}>
+                    <div
+                        className="frosted-panel p-5 mx-auto"
+                        style={{
+                            maxWidth: '800px',
+                            background: 'rgba(255,255,255,0.10)',
+                            backdropFilter: 'blur(28px) saturate(200%)',
+                            WebkitBackdropFilter: 'blur(28px) saturate(200%)',
+                            border: '1px solid rgba(255,255,255,0.4)',
+                            boxShadow: '0 12px 48px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5)'
+                        }}
+                    >
+                        <h1 className="display-3 mb-4" style={{ color: '#fff', textShadow: '2px 2px 8px rgba(0,0,0,0.6)', fontWeight: 800 }}>
+                            TULOY PO KAYO, SA DUYANAN!
+                        </h1>
+                        <p className="lead mb-4" style={{ color: 'rgba(255,255,255,0.92)', textShadow: '1px 1px 4px rgba(0,0,0,0.5)', fontSize: '1.15rem' }}>
+                            Experience the authentic taste of Filipino cuisine in a relaxing atmosphere.
+                        </p>
+                        <div className="d-flex justify-content-center gap-3">
+                            <Link to="/menu" className="btn-outline-brand text-decoration-none">Order Now</Link>
+                            <button className="btn-outline-brand" onClick={onOpenReservation}>Book Reservation</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            {/* ── Features Carousel ── */}
+            <section style={{ background: 'linear-gradient(135deg, #3d1a00 0%, #1a0a00 100%)', paddingTop: '50px', paddingBottom: '70px' }}>
+                {/* Section heading */}
+                <p className="text-center" style={{
+                    color: 'rgba(255,200,120,0.9)',
+                    fontWeight: 800,
+                    letterSpacing: '6px',
+                    textTransform: 'uppercase',
+                    fontSize: '1.8rem',
+                    marginBottom: '32px',
+                    marginTop: 0
+                }}>
+                    ✦ &nbsp; Features &nbsp; ✦
+                </p>
+
+                <div className="container">
+                    {/* Carousel wrapper */}
+                    <div style={{ position: 'relative', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+
+                        {/* Slide */}
+                        <div style={{ position: 'relative', height: '480px' }}>
+                            <img
+                                key={activeSlide}
+                                src={slide.img}
+                                alt={slide.title}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'opacity 0.5s ease' }}
+                            />
+                            {/* Left-to-right gradient overlay */}
+                            <div style={{
+                                position: 'absolute', inset: 0,
+                                background: 'linear-gradient(90deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.2) 55%, transparent 100%)'
+                            }} />
+
+                            {/* Caption */}
+                            <div style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '6%',
+                                transform: 'translateY(-50%)',
+                                maxWidth: '460px',
+                                textAlign: 'left',
+                            }}>
+                                <span style={{
+                                    display: 'inline-block',
+                                    background: 'var(--accent-orange)',
+                                    color: '#fff',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 700,
+                                    padding: '4px 14px',
+                                    borderRadius: '50px',
+                                    marginBottom: '14px',
+                                    letterSpacing: '0.5px',
+                                    boxShadow: '0 2px 8px rgba(211,84,0,0.5)'
+                                }}>
+                                    {slide.tag}
+                                </span>
+
+                                <h2 style={{
+                                    color: '#fff',
+                                    fontWeight: 800,
+                                    fontSize: 'clamp(1.6rem, 4vw, 2.4rem)',
+                                    textShadow: '0 2px 12px rgba(0,0,0,0.6)',
+                                    lineHeight: 1.2,
+                                    marginBottom: '12px'
+                                }}>
+                                    {slide.title}
+                                </h2>
+
+                                <p style={{
+                                    color: 'rgba(255,255,255,0.85)',
+                                    fontSize: '1rem',
+                                    marginBottom: '22px',
+                                    textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+                                    lineHeight: 1.6
+                                }}>
+                                    {slide.desc}
+                                </p>
+
+                                <div className="d-flex align-items-center gap-3 flex-wrap">
+                                    {slide.price && (
+                                        <span style={{ color: '#ffd580', fontSize: '1.7rem', fontWeight: 800, textShadow: '0 2px 8px rgba(0,0,0,0.4)', lineHeight: 1 }}>
+                                            {slide.price}
+                                        </span>
+                                    )}
+                                    <Link to="/menu" className="btn-brand text-decoration-none" style={{ padding: '10px 26px' }}>
+                                        Order Now
+                                    </Link>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {/* Invisible left click zone — go prev */}
+                        <div
+                            onClick={() => goTo(activeSlide - 1)}
+                            style={{
+                                position: 'absolute', top: 0, left: 0,
+                                width: '50%', height: '100%',
+                                cursor: 'pointer', zIndex: 10
+                            }}
+                        />
+
+                        {/* Invisible right click zone — go next */}
+                        <div
+                            onClick={() => goTo(activeSlide + 1)}
+                            style={{
+                                position: 'absolute', top: 0, right: 0,
+                                width: '50%', height: '100%',
+                                cursor: 'pointer', zIndex: 10
+                            }}
+                        />
+                    </div>
+
+                    {/* Dots — below the carousel */}
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '20px' }}>
+                        {carouselSlides.map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => goTo(i)}
+                                style={{
+                                    width: i === activeSlide ? '28px' : '10px',
+                                    height: '10px',
+                                    borderRadius: '5px',
+                                    border: 'none',
+                                    background: i === activeSlide ? 'var(--accent-orange)' : 'rgba(255,255,255,0.35)',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                    transition: 'all 0.3s ease'
+                                }}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Recommended Section */}
+            <section className="section-py">
+                <div className="container">
+                    <div className="frosted-section" style={{ background: 'rgba(253,251,247,0.6)', backdropFilter: 'blur(12px) saturate(140%)', WebkitBackdropFilter: 'blur(12px) saturate(140%)', border: '1px solid rgba(255,255,255,0.5)', boxShadow: '0 4px 30px rgba(0,0,0,0.06)' }}>
+                        <h2 className="text-center mb-5" style={{ color: 'var(--primary-brown)', textShadow: '0 1px 2px rgba(255,255,255,0.5)' }}>Recommended</h2>
+
+                        <div className="row g-4 d-flex align-items-stretch">
+                            {[
+                                { name: 'Sizzling Fried Chicken', price: '₱109.00', img: sfcImg },
+                                { name: 'Pancit Habhab', price: '₱250.00', img: habhabImg },
+                                { name: 'Lumpiang Turon', price: '₱50.00', img: 'https://placehold.co/400x300/brown/white?text=Turon' }
+                            ].map((item, index) => (
+                                <div className="col-md-4" key={index}>
+                                    <div className="card h-100 border-0 frosted-card">
+                                        <img src={item.img} className="card-img-top" alt={item.name} style={{ height: '250px', objectFit: 'cover' }} />
+                                        <div className="card-body text-center d-flex flex-column">
+                                            <h5 className="card-title" style={{ color: 'var(--primary-brown)', fontWeight: 'bold' }}>{item.name}</h5>
+                                            <div className="mt-auto">
+                                                <p className="card-text text-muted mb-3">
+                                                    <span style={{ color: 'var(--accent-orange)', fontWeight: 'bold', fontSize: '1.2rem' }}>{item.price}</span>
+                                                </p>
+                                                <button className="btn-outline-brand w-75">Add to cart</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    );
+};
+
+export default Home;

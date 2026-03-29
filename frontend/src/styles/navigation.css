@@ -1,0 +1,91 @@
+﻿/* Navigation Styles */
+.nav-glass {
+  transition: all 0.4s ease-in-out;
+  border-bottom: 1px solid transparent;
+}
+
+.nav-filled {
+  background: linear-gradient(to bottom, var(--accent-orange), var(--dark-brown));
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+
+.nav-clear {
+  background: transparent;
+  box-shadow: none;
+  padding-top: 15px !important;
+  padding-bottom: 15px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Nav Link Hover Effect */
+.nav-link {
+  position: relative;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 50%;
+  background-color: white;
+  transition: all 0.3s ease-in-out;
+  transform: translateX(-50%);
+}
+
+.nav-link:hover::after {
+  width: 80%;
+}
+
+/* Mobile Menu Glass */
+@media (max-width: 991px) {
+  .navbar-collapse {
+    background: linear-gradient(to bottom, var(--accent-orange), var(--dark-brown));
+    border-radius: 0;
+    padding: 30px 20px;
+    margin-top: 0;
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    width: 100%;
+    height: calc(100vh - var(--nav-height));
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .navbar-collapse.collapse {
+    display: none;
+  }
+}
+
+/* Nav Button Hover Expansion */
+.btn-expandable {
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-expandable span.btn-expandable-label {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.btn-expandable:hover span.btn-expandable-label {
+  max-width: 100px;
+  opacity: 1;
+  margin-left: 5px;
+}

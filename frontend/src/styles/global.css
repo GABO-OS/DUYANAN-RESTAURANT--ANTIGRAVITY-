@@ -1,0 +1,83 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --primary-brown: #a04000;
+  --dark-brown: #6e2c00;
+  --accent-orange: #d35400;
+  --bg-light: #fdfbf7;
+  --text-dark: #333333;
+  --text-light: #ffffff;
+  --nav-height: 80px;
+
+  /* Glassmorphism Variables */
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --backdrop-blur: blur(10px);
+  --gradient-bg: linear-gradient(135deg, #fdfbf7 0%, #eaddcf 100%);
+
+  font-family: 'Nunito', sans-serif !important;
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--text-dark);
+  background-color: var(--bg-light);
+}
+
+/* Force inheritance for form elements and buttons */
+* {
+  font-family: 'Nunito', sans-serif !important;
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand, .display-3 {
+  font-family: 'Nunito', sans-serif !important;
+  letter-spacing: -0.02em;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--gradient-bg);
+  background-attachment: fixed;
+  font-family: 'Nunito', sans-serif !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--primary-brown);
+  font-weight: 700;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: inherit;
+}
+
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Layout Utilities */
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.section-py {
+  padding: 80px 0;
+}
+
+/* Hide Scrollbar Utility */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

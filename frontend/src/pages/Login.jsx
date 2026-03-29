@@ -1,0 +1,275 @@
+﻿import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import duyananBg from '../assets/img/duyanan_bg.jpg';
+
+const API_URL = import.meta.env.VITE_API_URL;
+
+const Login = () => {
+    const [credentials, setCredentials] = useState({ email: '', password: '', rememberMe: false });
+    const [showPassword, setShowPassword] = useState(false);
+    const [loginError, setLoginError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [isLockedOut, setIsLockedOut] = useState(false);
+    const [lockoutSeconds, setLockoutSeconds] = useState(0);
+    const timerRef = useRef(null);
+    const navigate = useNavigate();
+
+    // Countdown timer effect
+    useEffect(() => {
+        if (lockoutSeconds <= 0) {
+            setIsLockedOut(false);
+            clearInterval(timerRef.current);
+            return;
+        }
+        timerRef.current = setInterval(() => {
+            setLockoutSeconds(prev => {
+                if (prev <= 1) {
+                    clearInterval(timerRef.current);
+                    setIsLockedOut(false);
+                    setLoginError('');
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timerRef.current);
+    }, [isLockedOut]);
+
+    const formatCountdown = (secs) => {
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        return m > 0 ? `${m}m ${s}s` : `${s}s`;
+    };
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setCredentials(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (isLockedOut) return;
+        setLoginError('');
+        setIsLoading(true);
+        try {
+            const response = await fetch(`${API_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email:    credentials.email,
+                    password: credentials.password,
+                }),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                if (data.lockedOut) {
+                    setIsLockedOut(true);
+                    setLockoutSeconds(Number(data.secondsLeft) || 900);
+                }
+                setLoginError(data.error || 'Login failed. Please try again.');
+            } else {
+                navigate('/');
+            }
+        } catch {
+            setLoginError('Could not connect to the server. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
+    return (
+        <div
+            style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '100px 20px 40px',
+                backgroundImage: `url(${duyananBg})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundAttachment: 'fixed',
+                position: 'relative',
+            }}
+        >
+            {/* Dark gradient overlay */}
+            <div style={{
+                position: 'fixed', inset: 0,
+                background: 'linear-gradient(160deg, rgba(0,0,0,0.45) 0%, rgba(110,44,0,0.55) 100%)',
+                zIndex: 0,
+            }} />
+
+            {/* Two-column glass card */}
+            <div
+                className="position-relative d-flex w-100"
+                style={{
+                    maxWidth: '900px',
+                    zIndex: 1,
+                    borderRadius: '24px',
+                    overflow: 'hidden',
+                    boxShadow: '0 12px 48px rgba(0,0,0,0.5)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                }}
+            >
+                {/* Left — Image Panel */}
+                <div
+                    className="d-none d-md-flex flex-column align-items-center justify-content-center"
+                    style={{
+                        width: '42%',
+                        flexShrink: 0,
+                        background: 'linear-gradient(160deg, rgba(110,44,0,0.85) 0%, rgba(40,10,0,0.95) 100%)',
+                        backdropFilter: 'blur(12px)',
+                        padding: '48px 32px',
+                        borderRight: '1px solid rgba(255,255,255,0.1)',
+                    }}
+                >
+                    <img
+                        src="/duyanan_logo.png"
+                        alt="Duyanan Logo"
+                        style={{ width: '200px', height: '200px', objectFit: 'cover', borderRadius: '50%', boxShadow: '0 8px 40px rgba(0,0,0,0.6)', marginBottom: '24px' }}
+                    />
+                    <h3 style={{ color: '#fff', fontWeight: 800, textAlign: 'center', textShadow: '0 2px 8px rgba(0,0,0,0.5)', marginBottom: '10px' }}>
+                        Tuloy po kayo!
+                    </h3>
+                    <p style={{ color: 'rgba(255,200,120,0.85)', textAlign: 'center', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                        Experience authentic Filipino cuisine at Duyanan.
+                    </p>
+                </div>
+
+                {/* Right — Form Panel */}
+                <div
+                    className="flex-grow-1 d-flex flex-column justify-content-center"
+                    style={{
+                        background: 'rgba(255,255,255,0.10)',
+                        backdropFilter: 'blur(28px) saturate(200%)',
+                        WebkitBackdropFilter: 'blur(28px) saturate(200%)',
+                        padding: '48px 44px',
+                    }}
+                >
+                    <h2 className="fw-bold mb-1" style={{ color: '#fff', textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+                        Welcome Back 👋
+                    </h2>
+                    <p className="mb-4" style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.88rem' }}>
+                        Log in to your Duyanan account
+                    </p>
+
+                    <form onSubmit={handleSubmit}>
+                        {/* Email */}
+                        <div className="mb-3 position-relative">
+                            <i className="bi bi-envelope position-absolute" style={{ left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.6)', zIndex: 1 }}></i>
+                            <input
+                                type="email"
+                                className="form-control input-auth ps-5"
+                                placeholder="Email Address"
+                                name="email"
+                                value={credentials.email}
+                                onChange={handleChange}
+                                required
+                                style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', borderRadius: '12px' }}
+                            />
+                        </div>
+
+                        {/* Password */}
+                        <div className="mb-3 position-relative">
+                            <i className="bi bi-lock position-absolute" style={{ left: '15px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.6)', zIndex: 1 }}></i>
+                            <input
+                                type={showPassword ? 'text' : 'password'}
+                                className="form-control input-auth ps-5 pe-5"
+                                placeholder="Password"
+                                name="password"
+                                value={credentials.password}
+                                onChange={handleChange}
+                                required
+                                style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', borderRadius: '12px' }}
+                            />
+                            <i
+                                className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'} position-absolute`}
+                                onClick={() => setShowPassword(p => !p)}
+                                style={{ right: '15px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', zIndex: 1 }}
+                            ></i>
+                        </div>
+
+                        {/* Remember + Forgot */}
+                        <div className="d-flex justify-content-between align-items-center mb-4">
+                            <div className="form-check">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id="rememberMe"
+                                    name="rememberMe"
+                                    checked={credentials.rememberMe}
+                                    onChange={handleChange}
+                                />
+                                <label className="form-check-label small" htmlFor="rememberMe" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                                    Remember Me
+                                </label>
+                            </div>
+                            <Link to="#" className="text-decoration-none small" style={{ color: 'rgba(255,200,120,0.9)' }}>Forgot Password?</Link>
+                        </div>
+
+                        {loginError && (
+                            <div
+                                className="mb-3 d-flex align-items-center gap-2"
+                                style={{
+                                    background: isLockedOut ? 'rgba(255,150,30,0.18)' : 'rgba(220,53,69,0.18)',
+                                    border: isLockedOut ? '1px solid rgba(255,150,30,0.5)' : '1px solid rgba(220,53,69,0.4)',
+                                    borderRadius: '10px',
+                                    padding: '10px 14px',
+                                    color: isLockedOut ? '#ffc060' : '#ffaaaa',
+                                    fontSize: '0.85rem',
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-start',
+                                }}
+                            >
+                                <div className="d-flex align-items-center gap-2">
+                                    <i className={`bi ${isLockedOut ? 'bi-shield-lock-fill' : 'bi-exclamation-circle-fill'}`}></i>
+                                    <span>{loginError}</span>
+                                </div>
+                                {isLockedOut && lockoutSeconds > 0 && (
+                                    <div style={{ marginTop: '6px', fontSize: '0.8rem', opacity: 0.85 }}>
+                                        <i className="bi bi-clock me-1"></i>
+                                        Try again in <strong>{formatCountdown(lockoutSeconds)}</strong>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        <button
+                            type="submit"
+                            className="btn-brand w-100"
+                            style={{ borderRadius: '50px', padding: '13px', opacity: isLockedOut ? 0.55 : 1, cursor: isLockedOut ? 'not-allowed' : 'pointer' }}
+                            disabled={isLoading || isLockedOut}
+                        >
+                            {isLoading
+                                ? <><span className="spinner-border spinner-border-sm me-2" role="status"></span>Logging in...</>
+                                : isLockedOut
+                                    ? <><i className="bi bi-lock-fill me-2"></i>Try again in {formatCountdown(lockoutSeconds)}</>
+                                    : 'Login Now'
+                            }
+                        </button>
+                    </form>
+
+                    {/* Social */}
+                    <div className="mt-4 text-center">
+                        <p className="small mb-3" style={{ color: 'rgba(255,255,255,0.45)' }}>Or continue with</p>
+                        <div className="d-flex justify-content-center gap-3 mb-4">
+                            <Link to="#" className="social-login-btn social-google"><i className="bi bi-google"></i></Link>
+                            <Link to="#" className="social-login-btn social-facebook"><i className="bi bi-facebook"></i></Link>
+                            <Link to="#" className="social-login-btn social-twitter"><i className="bi bi-twitter"></i></Link>
+                        </div>
+                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '16px' }}>
+                            <span className="small" style={{ color: 'rgba(255,255,255,0.55)' }}>Don't have an account? </span>
+                            <Link to="/register" className="text-decoration-none fw-bold small" style={{ color: 'rgba(255,200,120,0.9)' }}>Sign Up</Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Login;
