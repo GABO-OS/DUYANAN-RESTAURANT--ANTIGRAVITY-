@@ -12,10 +12,17 @@ public class AdminController {
 
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
+    private final ReservationRepository reservationRepository;
 
-    public AdminController(UserRepository userRepository, ProductRepository productRepository) {
+    public AdminController(UserRepository userRepository,
+                           ProductRepository productRepository,
+                           OrderRepository orderRepository,
+                           ReservationRepository reservationRepository) {
         this.userRepository = userRepository;
         this.productRepository = productRepository;
+        this.orderRepository = orderRepository;
+        this.reservationRepository = reservationRepository;
     }
 
     // ── Users ──────────────────────────────────────────────
@@ -63,4 +70,43 @@ public class AdminController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    // ── Orders (Admin) ────────────────────────────────────
+    @GetMapping("/orders")
+    public List<Order> getAllOrders() {
+        return orderRepository.findAllByOrderByOrderDateDesc();
+    }
+
+    @PutMapping("/orders/{id}/status")
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return orderRepository.findById(id).map(order -> {
+            order.setStatus(body.get("status"));
+            orderRepository.save(order);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Order status updated.",
+                    "orderId", order.getId(),
+                    "status", order.getStatus()
+            ));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // ── Reservations (Admin) ──────────────────────────────
+    @GetMapping("/reservations")
+    public List<Reservation> getAllReservations() {
+        return reservationRepository.findAllByOrderByReservationDateDesc();
+    }
+
+    @PutMapping("/reservations/{id}/status")
+    public ResponseEntity<?> updateReservationStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return reservationRepository.findById(id).map(reservation -> {
+            reservation.setStatus(body.get("status"));
+            reservationRepository.save(reservation);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Reservation status updated.",
+                    "reservationId", reservation.getId(),
+                    "status", reservation.getStatus()
+            ));
+        }).orElse(ResponseEntity.notFound().build());
+    }
 }
+

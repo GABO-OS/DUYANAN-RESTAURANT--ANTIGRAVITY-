@@ -38,6 +38,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/products/**").permitAll()
                         // Admin-only endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // Authenticated endpoints (orders & reservations)
+                        .requestMatchers("/api/orders/**").authenticated()
+                        .requestMatchers("/api/reservations/**").authenticated()
                         // Everything else requires authentication
                         .anyRequest().authenticated()
                 )
