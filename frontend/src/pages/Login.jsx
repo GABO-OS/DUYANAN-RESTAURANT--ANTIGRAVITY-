@@ -1,5 +1,6 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import duyananBg from '../assets/img/duyanan_bg.jpg';
 
@@ -14,6 +15,12 @@ const Login = () => {
     const [lockoutSeconds, setLockoutSeconds] = useState(0);
     const timerRef = useRef(null);
     const navigate = useNavigate();
+    const { login, isAuthenticated } = useAuth();
+
+    // Redirect if already logged in
+    useEffect(() => {
+        if (isAuthenticated) navigate('/');
+    }, [isAuthenticated, navigate]);
 
     // Countdown timer effect
     useEffect(() => {
@@ -72,7 +79,20 @@ const Login = () => {
                 }
                 setLoginError(data.error || 'Login failed. Please try again.');
             } else {
-                navigate('/');
+                // Save user session via AuthContext
+                login({
+                    email: data.email,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    role: data.role,
+                    token: data.token,
+                });
+                // Route based on role
+                if (data.role === 'ADMIN') {
+                    navigate('/admin');
+                } else {
+                    navigate('/');
+                }
             }
         } catch {
             setLoginError('Could not connect to the server. Please try again.');

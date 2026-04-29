@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { useCart } from '../context/CartContext';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -21,7 +21,7 @@ const CartPage = () => {
 
     if (cart.length === 0) {
         return (
-            <div className="container mt-5 text-center" style={{ minHeight: '60vh' }}>
+            <div className="container text-center" style={{ minHeight: '60vh', paddingTop: 'calc(var(--nav-height) + 40px)' }}>
                 <h2 style={{ color: '#A04000' }}>Your cart is empty</h2>
                 <Link to="/menu" className="btn btn-brand mt-3">Go to Menu</Link>
             </div>
@@ -29,7 +29,7 @@ const CartPage = () => {
     }
 
     return (
-        <div className="container mt-5 mb-5" style={{ backgroundColor: '#fff', borderRadius: '15px', padding: '30px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+        <div className="container mb-5" style={{ backgroundColor: '#fff', borderRadius: '15px', padding: '30px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', marginTop: 'calc(var(--nav-height) + 40px)' }}>
             <h2 className="mb-4 text-center" style={{ color: '#A04000', fontWeight: 'bold' }}>Order Confirmation</h2>
             
             <div className="table-responsive">
