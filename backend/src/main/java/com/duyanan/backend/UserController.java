@@ -1,6 +1,7 @@
 package com.duyanan.backend;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -20,9 +21,13 @@ public class UserController {
     private final ConcurrentHashMap<String, Long> lockoutExpiry = new ConcurrentHashMap<>();
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     // ── Register ──────────────────────────────────────────
@@ -48,10 +53,11 @@ public class UserController {
         }
 
         User user = new User();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
+        user.setFirstName(firstName.trim());
+        user.setLastName(lastName.trim());
         user.setEmail(email);
-        user.setPassword(body.get("password")); // plain-text for now
+        user.setPassword(passwordEncoder.encode(body.get("password"))); // BCrypt hash
+        user.setRole("CUSTOMER");
 
         userRepository.save(user);
         return ResponseEntity.ok(Map.of("message", "Registration successful!"));
@@ -82,7 +88,7 @@ public class UserController {
 
         // 2. Attempt authentication
         java.util.Optional<User> userOpt = userRepository.findByEmail(email);
-        boolean success = userOpt.map(u -> u.getPassword().equals(password)).orElse(false);
+        boolean success = userOpt.map(u -> passwordEncoder.matches(password, u.getPassword())).orElse(false);
 
         if (success) {
             // Clear any previous failure state
@@ -90,11 +96,15 @@ public class UserController {
             lockoutExpiry.remove(email);
 
             User u = userOpt.get();
+            String token = jwtUtil.generateToken(u.getId(), u.getEmail(), u.getRole());
+
             return ResponseEntity.ok(Map.of(
                     "message", "Login successful!",
                     "firstName", u.getFirstName(),
                     "lastName", u.getLastName(),
-                    "email", u.getEmail()));
+                    "email", u.getEmail(),
+                    "role", u.getRole(),
+                    "token", token));
         }
 
         // 3. Record failure
@@ -114,5 +124,24 @@ public class UserController {
                 "error",
                 "Invalid email or password. " + remaining + " attempt" + (remaining == 1 ? "" : "s") + " remaining.",
                 "attemptsLeft", remaining));
+    }
+
+    // ── Current User ──────────────────────────────────────
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.replace("Bearer ", "");
+            var claims = jwtUtil.validateToken(token);
+            String email = claims.getSubject();
+            return userRepository.findByEmail(email)
+                    .map(u -> ResponseEntity.ok(Map.of(
+                            "firstName", u.getFirstName(),
+                            "lastName", u.getLastName(),
+                            "email", u.getEmail(),
+                            "role", u.getRole())))
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
+        }
     }
 }

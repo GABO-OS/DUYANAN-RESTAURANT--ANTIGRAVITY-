@@ -1,7 +1,8 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import sfcImg from '../assets/img/sfc.png';
 import habhabImg from '../assets/img/habhab.jpg';
+import logoImg from '../assets/img/duyanan_logo.png';
 import { useCart } from '../context/CartContext';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -18,7 +19,16 @@ const Menu = () => {
     useEffect(() => {
         axios.get(`${API_URL}/api/products`)
             .then(response => {
-                setProducts(response.data);
+                const updatedProducts = response.data.map(p => {
+                    let finalImg = p.imageUrl;
+                    if (p.name === 'Sizzling Fried Chicken' || p.name === 'Chicken Inasal') {
+                        finalImg = sfcImg;
+                    } else if (p.name === 'Pancit Habhab') {
+                        finalImg = habhabImg;
+                    }
+                    return { ...p, imageUrl: finalImg };
+                });
+                setProducts(updatedProducts);
             })
             .catch(error => {
                 console.error('Error fetching products:', error);

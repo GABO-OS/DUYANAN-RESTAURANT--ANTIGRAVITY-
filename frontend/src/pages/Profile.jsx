@@ -1,15 +1,17 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const Profile = () => {
     // Current active tab in the sidebar
     const [activeTab, setActiveTab] = useState('profile');
+    const { user } = useAuth();
 
-    // Mock user data
+    // Use real user data from AuthContext
     const [profileData] = useState({
-        fullName: 'Jane Doe',
-        email: 'jane.doe@example.com',
+        fullName: user ? `${user.firstName} ${user.lastName}` : 'Guest',
+        email: user?.email || 'N/A',
         phone: '+63 912 345 6789',
         address: '123 Main St, Apt 4B, Springfield',
         dob: '01 January'

@@ -1,6 +1,7 @@
 package com.duyanan.backend;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -9,13 +10,30 @@ import java.util.Arrays;
 public class DataSeeder implements CommandLineRunner {
 
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public DataSeeder(ProductRepository productRepository) {
+    public DataSeeder(ProductRepository productRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.productRepository = productRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public void run(String... args) throws Exception {
+
+        // ── Seed admin user ──────────────────────────────────
+        if (!userRepository.existsByEmail("admin@duyanan.com")) {
+            User admin = new User();
+            admin.setFirstName("Admin");
+            admin.setLastName("Duyanan");
+            admin.setEmail("admin@duyanan.com");
+            admin.setPassword(passwordEncoder.encode("admin123"));
+            admin.setRole("ADMIN");
+            userRepository.save(admin);
+            System.out.println("✅ Default admin account created: admin@duyanan.com / admin123");
+        }
+
         if (productRepository.count() == 0) {
 
             // — Appetizers —
