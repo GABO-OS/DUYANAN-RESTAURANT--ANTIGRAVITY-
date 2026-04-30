@@ -70,6 +70,10 @@ const Navigation = () => {
                 </Link>
                 <div className={`${isNavCollapsed ? 'collapse' : ''} navbar-collapse`} id="navbarCollapse">
                     <ul className="navbar-nav ms-auto align-items-center">
+                        {/* Mobile Navigation Header */}
+                        <li className="nav-item d-lg-none w-100 mb-2 nav-header">
+                            <span className="px-3 fw-bold fs-5" style={{ color: 'var(--primary-brown)', letterSpacing: '1px' }}>Navigation</span>
+                        </li>
                         <li className="nav-item"><Link className={`nav-link ${location.pathname === '/' ? 'active' : ''}`} to="/" onClick={() => setIsNavCollapsed(true)} style={{ color: '#fff', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}><i className="bi bi-house-door me-3 d-lg-none"></i>Home</Link></li>
                         <li className="nav-item"><Link className="nav-link" to="/menu" onClick={() => setIsNavCollapsed(true)} style={{ color: '#fff', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}><i className="bi bi-book me-3 d-lg-none"></i>Menu</Link></li>
                         <li className="nav-item"><Link className={`nav-link ${location.pathname === '/reservations' ? 'active' : ''}`} to="/reservations" onClick={() => setIsNavCollapsed(true)} style={{ color: '#fff', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}><i className="bi bi-calendar-event me-3 d-lg-none"></i>Reservations</Link></li>
@@ -81,7 +85,6 @@ const Navigation = () => {
 
                         {isAuthenticated ? (
                             <>
-                                <hr className="d-lg-none w-100 my-2" style={{ borderColor: 'rgba(160, 64, 0, 0.2)' }} />
                                 <li className="nav-item ms-lg-2 d-none d-lg-flex align-items-center">
                                      <Link className="btn shadow-none d-flex align-items-center" to="/profile" style={{ color: '#fff', padding: '8px', fontSize: '1.5rem' }}>
                                         <i className="bi bi-person"></i>
@@ -99,12 +102,12 @@ const Navigation = () => {
                                     </Link>
                                     {cartCount > 0 && (<span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark shadow" style={{ transform: 'translate(-50%, -50%)', zIndex: 10 }}>{cartCount}</span>)}
                                 </li>
-                                <li className="nav-item ms-lg-1 d-flex align-items-center">
+                                <li className="nav-item ms-lg-1 d-none d-lg-flex align-items-center">
                                     <button className="btn shadow-none d-flex align-items-center" onClick={handleLogout} style={{ color: 'rgba(255,255,255,0.7)', padding: '8px', border: 'none', marginLeft: '5px' }} title="Logout">
                                         <i className="bi bi-box-arrow-right" style={{ fontSize: '1.2rem' }}></i>
                                     </button>
                                 </li>
-                                <li className="nav-item w-100 d-lg-none mt-2">
+                                <li className="nav-item w-100 d-lg-none" style={{ borderTop: '2px solid rgba(160, 64, 0, 0.1)' }}>
                                     <button className="nav-link text-danger w-100 text-start border-0 bg-transparent" onClick={handleLogout} style={{ fontWeight: 'bold' }}>
                                         <i className="bi bi-box-arrow-right me-3"></i>Log out
                                     </button>
@@ -112,7 +115,6 @@ const Navigation = () => {
                             </>
                         ) : (
                             <>
-                                <hr className="d-lg-none w-100 my-2" style={{ borderColor: 'rgba(160, 64, 0, 0.2)' }} />
                                 <li className="nav-item ms-lg-2 d-none d-lg-flex align-items-center">
                                     <Link className="btn shadow-none" to="/login" style={{ color: '#fff', padding: '8px', fontSize: '1.5rem' }}>
                                         <i className="bi bi-person"></i>

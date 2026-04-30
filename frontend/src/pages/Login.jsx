@@ -15,7 +15,7 @@ const Login = () => {
     const [lockoutSeconds, setLockoutSeconds] = useState(0);
     const timerRef = useRef(null);
     const navigate = useNavigate();
-    const { login, isAuthenticated } = useAuth();
+    const { login, isAuthenticated, user } = useAuth();
 
     // Redirect if already logged in
     useEffect(() => {

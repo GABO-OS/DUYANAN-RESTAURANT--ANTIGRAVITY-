@@ -1,21 +1,85 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const CartPage = () => {
     const { cart, removeFromCart, clearCart } = useCart();
+    const { user, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
 
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     const handleCheckout = async () => {
-        try {
-            // Mock checkout for now if backend expects specific format
-            alert(`Order placed! Total: $${total.toFixed(2)}`);
-            clearCart();
-        } catch (error) {
-            console.error("Checkout failed:", error);
-            alert("Checkout failed. Please try again.");
+        if (!isAuthenticated) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sign In Required',
+                text: 'Please log in to place your order.',
+                confirmButtonColor: '#A04000'
+            });
+            navigate('/login');
+            return;
+        }
+
+        const result = await Swal.fire({
+            title: 'Confirm Order?',
+            text: `Place order for a total of ₱${total.toFixed(2)}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#A04000',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Order Now'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`${API_URL}/api/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user.token}`
+                    },
+                    body: JSON.stringify({
+                        notes: "Customer order via Website",
+                        items: cart.map(item => ({
+                            productId: item.id,
+                            quantity: item.quantity
+                        }))
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Order Placed!',
+                        text: 'Your delicious meal is now being prepared.',
+                        confirmButtonColor: '#A04000',
+                        timer: 5000
+                    });
+                    clearCart();
+                    navigate('/profile'); // Redirect to profile to see order status
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Order Failed',
+                        text: data.error || 'There was a problem placing your order.',
+                        confirmButtonColor: '#A04000'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Checkout Error',
+                    text: 'Could not reach the server. Please try again later.',
+                    confirmButtonColor: '#A04000'
+                });
+            }
         }
     };
 
@@ -55,9 +119,9 @@ const CartPage = () => {
                                         </div>
                                     </div>
                                 </td>
-                                <td>${item.price.toFixed(2)}</td>
+                                <td>₱{item.price.toFixed(2)}</td>
                                 <td>{item.quantity}</td>
-                                <td>${(item.price * item.quantity).toFixed(2)}</td>
+                                <td>₱{(item.price * item.quantity).toFixed(2)}</td>
                                 <td>
                                     <button className="btn-remove" onClick={() => removeFromCart(item.id)} title="Remove item">
                                         <i className="bi bi-trash3-fill"></i>
@@ -77,7 +141,7 @@ const CartPage = () => {
                     </div>
                 </div>
                 <div className="col-md-6 d-flex flex-column align-items-end justify-content-center">
-                    <h4 className="mb-3" style={{ color: '#A04000' }}>Total: <span style={{ fontWeight: 'bold' }}>${total.toFixed(2)}</span></h4>
+                    <h4 className="mb-3" style={{ color: '#A04000' }}>Total: <span style={{ fontWeight: 'bold' }}>₱{total.toFixed(2)}</span></h4>
                     <div className="d-flex gap-2">
                         <Link to="/menu" className="btn btn-outline-brand">Add More</Link>
                         <button className="btn btn-brand" onClick={handleCheckout}>Order Now</button>

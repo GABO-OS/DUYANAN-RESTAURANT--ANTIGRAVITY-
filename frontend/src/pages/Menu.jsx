@@ -4,6 +4,7 @@ import sfcImg from '../assets/img/sfc.png';
 import habhabImg from '../assets/img/habhab.jpg';
 import logoImg from '../assets/img/duyanan_logo.png';
 import { useCart } from '../context/CartContext';
+import Swal from 'sweetalert2';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -165,7 +166,19 @@ const Menu = () => {
                                                         <button 
                                                             className="btn-outline-brand w-100" 
                                                             style={{ fontSize: '0.9rem', padding: '8px 0' }}
-                                                            onClick={() => addToCart(product)}
+                                                            onClick={() => {
+                                                                addToCart(product);
+                                                                Swal.fire({
+                                                                    toast: true,
+                                                                    position: 'bottom-end',
+                                                                    icon: 'success',
+                                                                    title: 'Added to cart',
+                                                                    text: `${product.name} has been added.`,
+                                                                    showConfirmButton: false,
+                                                                    timer: 2500,
+                                                                    timerProgressBar: true
+                                                                });
+                                                            }}
                                                         >
                                                             Add to cart
                                                         </button>

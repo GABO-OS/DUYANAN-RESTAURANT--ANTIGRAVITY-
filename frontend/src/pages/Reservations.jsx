@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import Swal from 'sweetalert2';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Placeholder imports - using existing images. 
 // You can replace these files in the assets folder with the 3 images you uploaded!
@@ -19,6 +23,7 @@ const Reservations = () => {
         guests: '',
         request: ''
     });
+    const { user, isAuthenticated } = useAuth();
 
     // Handle background slider
     useEffect(() => {
@@ -35,11 +40,66 @@ const Reservations = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Reservation Data:', formData);
-        alert('Reservation Submitted!');
-        navigate('/'); // Redirect to home after submission
+
+        if (!isAuthenticated) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Please Log In',
+                text: 'You need to be logged in to make a reservation.',
+                confirmButtonColor: 'var(--primary-brown)'
+            });
+            navigate('/login');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/api/reservations`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user.token}`
+                },
+                body: JSON.stringify({
+                    guestName: `${user.firstName} ${user.lastName}`,
+                    contactNumber: "N/A",
+                    reservationDate: formData.date,
+                    reservationTime: formData.time,
+                    numberOfGuests: formData.guests,
+                    specialRequests: formData.request,
+                    seatingType: formData.seatingType
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Reservation Confirmed!',
+                    text: 'Your table has been successfully booked. Redirecting to home...',
+                    confirmButtonColor: 'var(--primary-brown)',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+                navigate('/');
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Reservation Failed',
+                    text: data.error || 'Something went wrong. Please try again.',
+                    confirmButtonColor: 'var(--primary-brown)'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Connection Error',
+                text: 'Could not connect to the server. Please check your internet.',
+                confirmButtonColor: 'var(--primary-brown)'
+            });
+        }
     };
 
     const inputStyle = {

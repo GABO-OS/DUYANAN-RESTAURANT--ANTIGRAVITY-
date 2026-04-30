@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import Swal from 'sweetalert2';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const AdminPanel = () => {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const [activeTab, setActiveTab] = useState('dashboard');
     const [users, setUsers] = useState([]);
     const [products, setProducts] = useState([]);
@@ -95,12 +96,29 @@ const AdminPanel = () => {
             });
 
             if (res.ok) {
-                setMessage(editingProduct ? 'Product updated!' : 'Product created!');
+                Swal.fire({
+                    icon: 'success',
+                    title: editingProduct ? 'Product Updated' : 'Product Created',
+                    text: `Successfully ${editingProduct ? 'updated' : 'created'} ${payload.name}.`,
+                    confirmButtonColor: 'var(--primary-brown)'
+                });
                 resetProductForm();
                 fetchData();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Action Failed',
+                    text: 'Unable to save the product. Please check your inputs.',
+                    confirmButtonColor: 'var(--primary-brown)'
+                });
             }
         } catch {
-            setMessage('Error saving product.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error saving product.',
+                confirmButtonColor: 'var(--primary-brown)'
+            });
         }
     };
 
@@ -117,35 +135,54 @@ const AdminPanel = () => {
     };
 
     const handleDeleteProduct = async (id) => {
-        if (!confirm('Are you sure you want to delete this product?')) return;
-        try {
-            const res = await fetch(`${API_URL}/api/admin/products/${id}`, {
-                method: 'DELETE',
-                headers: authHeaders()
-            });
-            if (res.ok) {
-                setMessage('Product deleted.');
-                fetchData();
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "This product will be permanently removed from the menu.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/products/${id}`, {
+                    method: 'DELETE',
+                    headers: authHeaders()
+                });
+                if (res.ok) {
+                    Swal.fire('Deleted!', 'Product has been removed.', 'success');
+                    fetchData();
+                }
+            } catch (e) {
+                Swal.fire('Error', 'Failed to delete product.', 'error');
             }
-        } catch {
-            setMessage('Error deleting product.');
         }
     };
 
     // ── Orders & Reservations Status ──────────────────────
-    const handleUpdateStatus = async (type, id, newStatus) => {
+    const handleUpdateStatus = async (type, id, status) => {
         try {
             const res = await fetch(`${API_URL}/api/admin/${type}/${id}/status`, {
                 method: 'PUT',
                 headers: authHeaders(),
-                body: JSON.stringify({ status: newStatus })
+                body: JSON.stringify({ status })
             });
+
             if (res.ok) {
-                setMessage(`${type === 'orders' ? 'Order' : 'Reservation'} status updated to ${newStatus}.`);
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Status Updated',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
                 fetchData();
             }
-        } catch {
-            setMessage('Failed to update status.');
+        } catch (e) {
+            Swal.fire('Error', 'Failed to update status.', 'error');
         }
     };
 
@@ -221,7 +258,7 @@ const AdminPanel = () => {
                 {/* Right: Admin Profile/Logout */}
                 <div className="d-flex align-items-center justify-content-end" style={{ minWidth: '220px' }}>
                     <span className="me-3 fw-bold d-none d-xl-block" style={{ fontSize: '1.1rem', opacity: 0.9 }}>Administrator</span>
-                    <button className="btn btn-md btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '42px', height: '42px' }} onClick={() => window.location.href = '/'}>
+                    <button className="btn btn-md btn-outline-light rounded-circle p-2 d-flex align-items-center justify-content-center" style={{ width: '42px', height: '42px' }} onClick={() => { logout(); window.location.href = '/'; }}>
                         <i className="bi bi-box-arrow-right fs-4"></i>
                     </button>
                 </div>
@@ -409,9 +446,9 @@ const AdminPanel = () => {
                                                 {reservations.map(r => (
                                                     <tr key={r.id}>
                                                         <td className="px-4 fw-bold">#{r.id}</td>
-                                                        <td className="px-4">{r.name}</td>
+                                                        <td className="px-4">{r.guestName}</td>
                                                         <td className="px-4">{r.reservationDate} <span className="text-muted small">{r.reservationTime}</span></td>
-                                                        <td className="px-4">{r.guests}</td>
+                                                        <td className="px-4">{r.numberOfGuests}</td>
                                                         <td className="px-4">
                                                             <span className={`badge rounded-pill ${r.status === 'PENDING' ? 'bg-warning text-dark' : r.status === 'CONFIRMED' ? 'bg-success' : 'bg-danger'}`}>
                                                                 {r.status}
