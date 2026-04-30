@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
     // Role check (e.g. "ADMIN")
     if (requiredRole && user?.role !== requiredRole) {
-        return <Navigate to="/" replace />;
+        return <Navigate to="/" replace state={{ alert: "Unauthorized access. This area is for administrators only.", type: "danger" }} />;
     }
 
     return children;

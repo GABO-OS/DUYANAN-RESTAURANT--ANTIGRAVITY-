@@ -8,7 +8,7 @@ import Home from './pages/Home';
 import Menu from './pages/Menu'; // Was ProductList
 import CartPage from './pages/CartPage'; // Was Cart
 import Footer from './components/Footer';
-import ReservationModal from './components/ReservationModal';
+import Reservations from './pages/Reservations';
 import About from './pages/About';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -17,18 +17,12 @@ import AdminPanel from './pages/AdminPanel';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
-    const [showReservation, setShowReservation] = useState(false);
-
-    const handleOpenReservation = () => setShowReservation(true);
-    const handleCloseReservation = () => setShowReservation(false);
-
     return (
         <AuthProvider>
             <CartProvider>
                 <Router>
                     <div className="d-flex flex-column min-vh-100">
-                        <Navigation onOpenReservation={handleOpenReservation} />
-                        <ReservationModal show={showReservation} handleClose={handleCloseReservation} />
+                        <Navigation />
                         <Routes>
                             {/* Public Auth routes */}
                             <Route path="/login" element={<Login />} />
@@ -37,7 +31,7 @@ function App() {
                             {/* Protected routes — require login */}
                             <Route path="/" element={
                                 <ProtectedRoute>
-                                    <Home onOpenReservation={handleOpenReservation} />
+                                    <Home />
                                 </ProtectedRoute>
                             } />
                             <Route path="/menu" element={
@@ -52,7 +46,7 @@ function App() {
                             } />
                             <Route path="/reservations" element={
                                 <ProtectedRoute>
-                                    <div className="container mt-5 text-center"><h2>Reservations</h2><button className="btn btn-primary" onClick={handleOpenReservation}>Book Now</button></div>
+                                    <Reservations />
                                 </ProtectedRoute>
                             } />
                             {/* Protected routes — require login */}

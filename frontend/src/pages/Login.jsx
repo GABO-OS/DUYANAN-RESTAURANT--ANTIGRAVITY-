@@ -19,8 +19,14 @@ const Login = () => {
 
     // Redirect if already logged in
     useEffect(() => {
-        if (isAuthenticated) navigate('/');
-    }, [isAuthenticated, navigate]);
+        if (isAuthenticated) {
+            if (user?.role === 'ADMIN') {
+                navigate('/admin');
+            } else {
+                navigate('/');
+            }
+        }
+    }, [isAuthenticated, navigate, user]);
 
     // Countdown timer effect
     useEffect(() => {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import duyananBg from '../assets/img/duyanan_bg.jpg';
 import sfcImg from '../assets/img/sfc.png';
 import habhabImg from '../assets/img/habhab.jpg';
@@ -28,12 +29,46 @@ const carouselSlides = [
     },
 ];
 
-const Home = ({ onOpenReservation }) => {
+const Home = () => {
     const [activeSlide, setActiveSlide] = useState(0);
 
     const goTo = useCallback((index) => {
         setActiveSlide((index + carouselSlides.length) % carouselSlides.length);
     }, []);
+
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { isAuthenticated, user } = useAuth();
+    const [alert, setAlert] = useState(null);
+    const [isAlertVisible, setIsAlertVisible] = useState(false);
+
+    // Redirect admins to dashboard if they land on Home
+    useEffect(() => {
+        if (isAuthenticated && user?.role === 'ADMIN') {
+            navigate('/admin', { replace: true });
+        }
+    }, [isAuthenticated, user, navigate]);
+
+    useEffect(() => {
+        if (location.state?.alert) {
+            setAlert({ message: location.state.alert, type: location.state.type || 'info' });
+            setIsAlertVisible(true);
+            // Clear state so it doesn't reappear on refresh
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [location, navigate]);
+
+    useEffect(() => {
+        if (alert) {
+            setIsAlertVisible(true);
+            const timer = setTimeout(() => {
+                setIsAlertVisible(false);
+                // Wait for animation to finish before clearing state
+                setTimeout(() => setAlert(null), 800);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [alert]);
 
     // Auto-advance every 4 seconds
     useEffect(() => {
@@ -46,7 +81,17 @@ const Home = ({ onOpenReservation }) => {
     const slide = carouselSlides[activeSlide];
 
     return (
-        <div>
+        <div className="position-relative">
+            {/* ── Floating Alert ── */}
+            {alert && (
+                <div className="position-fixed top-0 start-50 translate-middle-x mt-4" style={{ zIndex: 10000, width: 'max-content', maxWidth: '90%' }}>
+                    <div className={`alert alert-${alert.type === 'danger' ? 'danger' : 'success'} border-0 shadow-lg rounded-4 py-3 px-4 fw-bold d-inline-flex align-items-center mb-0 animate__animated ${isAlertVisible ? 'animate__fadeInDown' : 'animate__backOutUp'}`} role="alert">
+                        <i className={`bi ${alert.type === 'danger' ? 'bi-exclamation-triangle-fill' : 'bi-check-circle-fill'} me-3 fs-4`}></i>
+                        {alert.message}
+                    </div>
+                </div>
+            )}
+
             {/* Hero Section */}
             <header
                 style={{
@@ -89,7 +134,7 @@ const Home = ({ onOpenReservation }) => {
                         </p>
                         <div className="d-flex justify-content-center gap-3">
                             <Link to="/menu" className="btn-outline-brand text-decoration-none">Order Now</Link>
-                            <button className="btn-outline-brand" onClick={onOpenReservation}>Book Reservation</button>
+                            <Link to="/reservations" className="btn-outline-brand text-decoration-none">Book Reservation</Link>
                         </div>
                     </div>
                 </div>

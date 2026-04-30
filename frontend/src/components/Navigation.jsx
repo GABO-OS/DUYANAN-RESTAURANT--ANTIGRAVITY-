@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
-const Navigation = ({ onOpenReservation }) => {
+const Navigation = () => {
     const { cart } = useCart();
     const { isAuthenticated, isAdmin, user, logout } = useAuth();
     const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -18,6 +18,8 @@ const Navigation = ({ onOpenReservation }) => {
     const navClass = 'nav-filled';
     const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
+    if (location.pathname === '/admin') return null;
+
     if (isAuthPage) {
         return (
             <nav className={`navbar navbar-expand-lg nav-glass fixed-top ${navClass}`} style={{ minHeight: 'var(--nav-height)' }}>
@@ -28,9 +30,9 @@ const Navigation = ({ onOpenReservation }) => {
                     </Link>
                     <div className="d-flex align-items-center">
                         {location.pathname === '/login' ? (
-                            <Link to="/register" className="btn btn-sm shadow-sm" style={{ backgroundColor: '#fff', color: 'var(--primary-brown)', borderRadius: '50px', padding: '8px 20px', fontWeight: 'bold' }}>Sign Up</Link>
+                            <Link to="/register" className="btn shadow-none" style={{ color: '#fff', fontSize: '1.5rem', padding: '8px' }}><i className="bi bi-person-plus"></i></Link>
                         ) : (
-                            <Link to="/login" className="btn btn-sm shadow-sm" style={{ backgroundColor: 'var(--accent-orange)', color: '#fff', borderRadius: '50px', padding: '8px 20px', fontWeight: 'bold' }}>Log In</Link>
+                            <Link to="/login" className="btn shadow-none" style={{ color: '#fff', fontSize: '1.5rem', padding: '8px' }}><i className="bi bi-person"></i></Link>
                         )}
                     </div>
                 </div>
@@ -41,53 +43,91 @@ const Navigation = ({ onOpenReservation }) => {
     return (
         <nav className={`navbar navbar-expand-lg nav-glass fixed-top ${navClass}`} style={{ minHeight: 'var(--nav-height)' }}>
             <div className="container-fluid px-4 px-lg-5">
-                <Link className="navbar-brand d-flex align-items-center" to="/">
+                {/* Mobile Header Layout (visible only on small screens) */}
+                <div className="d-flex justify-content-between align-items-center w-100 d-lg-none position-relative">
+                    {/* Hamburger Menu on Left */}
+                    <button className="navbar-toggler border-0 shadow-none px-0" type="button" onClick={() => setIsNavCollapsed(!isNavCollapsed)} aria-controls="navbarCollapse" aria-expanded={!isNavCollapsed} aria-label="Toggle navigation">
+                        <i className={`bi ${isNavCollapsed ? 'bi-list' : 'bi-x-lg'} text-white`} style={{ fontSize: '2.2rem', display: 'inline-block', transition: 'transform 0.3s ease', transform: isNavCollapsed ? 'rotate(0deg)' : 'rotate(90deg)' }}></i>
+                    </button>
+                    
+                    {/* Brand Centered */}
+                    <Link className="navbar-brand mx-auto d-flex align-items-center justify-content-center" to="/" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+                        <span style={{ fontSize: '1.8rem', color: '#fff', fontWeight: 'bold', textShadow: '1px 1px 2px rgba(0,0,0,0.5)', marginRight: '4px' }}>Duyanan</span>
+                        <span style={{ fontSize: '1.2rem', transform: 'rotate(-20deg)', filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.3))' }}>🍃</span>
+                    </Link>
+
+                    {/* Cart Button on Right */}
+                    <Link className="btn bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm position-relative" to={isAuthenticated ? "/cart" : "/menu"} style={{ width: '42px', height: '42px' }}>
+                        <i className="bi bi-cart3" style={{ fontSize: '1.3rem', color: 'var(--accent-orange)' }}></i>
+                        {isAuthenticated && cartCount > 0 && (<span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark" style={{ transform: 'translate(-30%, -30%)', fontSize: '0.7rem' }}>{cartCount}</span>)}
+                    </Link>
+                </div>
+
+                {/* Desktop Brand (hidden on mobile) */}
+                <Link className="navbar-brand d-none d-lg-flex align-items-center" to="/">
                    <span style={{ fontSize: '2rem', color: '#fff', marginRight: '10px', textShadow: '2px 2px 4px rgba(0,0,0,0.5)' }}>Duyanan</span>
                    <span style={{ fontSize: '1.5rem', transform: 'rotate(-20deg)', filter: 'drop-shadow(2px 2px 2px rgba(0,0,0,0.3))' }}>🍃</span>
                 </Link>
-                <button className="navbar-toggler" type="button" onClick={() => setIsNavCollapsed(!isNavCollapsed)} aria-controls="navbarCollapse" aria-expanded={!isNavCollapsed} aria-label="Toggle navigation" style={{ borderColor: 'rgba(255,255,255,0.5)' }}>
-                    <span className="navbar-toggler-icon" style={{ filter: 'invert(1)' }}></span>
-                </button>
                 <div className={`${isNavCollapsed ? 'collapse' : ''} navbar-collapse`} id="navbarCollapse">
                     <ul className="navbar-nav ms-auto align-items-center">
-                        <li className="nav-item"><Link className={`nav-link ${location.pathname === '/' ? 'active' : ''}`} to="/" style={{ color: '#fff', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Home</Link></li>
-                        <li className="nav-item"><Link className="nav-link" to="/menu" style={{ color: '#fff', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Menu</Link></li>
-                        <li className="nav-item"><button className="nav-link btn btn-link" onClick={onOpenReservation} style={{ color: '#fff', fontWeight: 'bold', textDecoration: 'none', background: 'none', border: 'none', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Reservations</button></li>
-                        <li className="nav-item"><Link className="nav-link" to="/about" style={{ color: '#fff', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>About Us</Link></li>
+                        <li className="nav-item"><Link className={`nav-link ${location.pathname === '/' ? 'active' : ''}`} to="/" onClick={() => setIsNavCollapsed(true)} style={{ color: '#fff', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}><i className="bi bi-house-door me-3 d-lg-none"></i>Home</Link></li>
+                        <li className="nav-item"><Link className="nav-link" to="/menu" onClick={() => setIsNavCollapsed(true)} style={{ color: '#fff', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}><i className="bi bi-book me-3 d-lg-none"></i>Menu</Link></li>
+                        <li className="nav-item"><Link className={`nav-link ${location.pathname === '/reservations' ? 'active' : ''}`} to="/reservations" onClick={() => setIsNavCollapsed(true)} style={{ color: '#fff', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}><i className="bi bi-calendar-event me-3 d-lg-none"></i>Reservations</Link></li>
+                        <li className="nav-item"><Link className="nav-link" to="/about" onClick={() => setIsNavCollapsed(true)} style={{ color: '#fff', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}><i className="bi bi-info-circle me-3 d-lg-none"></i>About Us</Link></li>
 
                         {isAuthenticated && isAdmin && (
-                            <li className="nav-item"><Link className="nav-link" to="/admin" style={{ color: '#ffd580', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}><i className="bi bi-shield-lock me-1"></i>Admin</Link></li>
+                            <li className="nav-item"><Link className="nav-link" to="/admin" onClick={() => setIsNavCollapsed(true)} style={{ color: '#ffd580', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}><i className="bi bi-shield-lock me-3"></i>Admin</Link></li>
                         )}
 
                         {isAuthenticated ? (
                             <>
-                                <li className="nav-item ms-lg-2 d-flex align-items-center position-relative">
-                                     <Link className="btn btn-sm shadow-sm d-flex align-items-center btn-expandable" to="/cart" style={{ backgroundColor: '#fff', color: 'var(--accent-orange)', borderRadius: '50px', padding: '8px 20px', fontWeight: 'bold', textDecoration: 'none' }}>
-                                        <i className="bi bi-cart-fill" style={{ fontSize: '1.2rem' }}></i>
-                                        <span className="btn-expandable-label">My Orders</span>
-                                    </Link>
-                                    {cartCount > 0 && (<span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger shadow" style={{ transform: 'translate(-50%, -50%)', zIndex: 10 }}>{cartCount}</span>)}
-                                </li>
-                                <li className="nav-item ms-lg-1 d-flex align-items-center">
-                                     <Link className="btn btn-sm shadow-sm position-relative d-flex align-items-center btn-expandable" to="/profile" style={{ backgroundColor: '#fff', color: 'var(--primary-brown)', borderRadius: '50px', padding: '8px 20px', fontWeight: 'bold', textDecoration: 'none' }}>
-                                        <i className="bi bi-person-circle" style={{ fontSize: '1.2rem' }}></i>
-                                        <span className="btn-expandable-label">{user?.firstName || 'Profile'}</span>
+                                <hr className="d-lg-none w-100 my-2" style={{ borderColor: 'rgba(160, 64, 0, 0.2)' }} />
+                                <li className="nav-item ms-lg-2 d-none d-lg-flex align-items-center">
+                                     <Link className="btn shadow-none d-flex align-items-center" to="/profile" style={{ color: '#fff', padding: '8px', fontSize: '1.5rem' }}>
+                                        <i className="bi bi-person"></i>
                                     </Link>
                                 </li>
+                                <li className="nav-item w-100 d-lg-none">
+                                     <Link className="nav-link" to="/profile" onClick={() => setIsNavCollapsed(true)} style={{ color: '#fff', fontWeight: 'bold' }}>
+                                        <i className="bi bi-person-circle me-3"></i>My Profile
+                                    </Link>
+                                </li>
+                                <li className="nav-item ms-lg-2 d-none d-lg-flex align-items-center position-relative">
+                                     <Link className="btn shadow-sm d-flex align-items-center rounded-pill" to="/cart" style={{ backgroundColor: '#fff', color: 'var(--accent-orange)', padding: '8px 24px', fontWeight: 'bold', textDecoration: 'none' }}>
+                                        <i className="bi bi-cart3 me-2" style={{ fontSize: '1.2rem', color: 'var(--accent-orange)' }}></i>
+                                        Order Now
+                                    </Link>
+                                    {cartCount > 0 && (<span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark shadow" style={{ transform: 'translate(-50%, -50%)', zIndex: 10 }}>{cartCount}</span>)}
+                                </li>
                                 <li className="nav-item ms-lg-1 d-flex align-items-center">
-                                    <button className="btn btn-sm shadow-sm d-flex align-items-center" onClick={handleLogout} style={{ backgroundColor: 'rgba(220,53,69,0.9)', color: '#fff', borderRadius: '50px', padding: '8px 20px', fontWeight: 'bold', border: 'none' }}>
-                                        <i className="bi bi-box-arrow-right" style={{ fontSize: '1.1rem' }}></i>
-                                        <span className="ms-1 d-none d-xl-inline">Logout</span>
+                                    <button className="btn shadow-none d-flex align-items-center" onClick={handleLogout} style={{ color: 'rgba(255,255,255,0.7)', padding: '8px', border: 'none', marginLeft: '5px' }} title="Logout">
+                                        <i className="bi bi-box-arrow-right" style={{ fontSize: '1.2rem' }}></i>
+                                    </button>
+                                </li>
+                                <li className="nav-item w-100 d-lg-none mt-2">
+                                    <button className="nav-link text-danger w-100 text-start border-0 bg-transparent" onClick={handleLogout} style={{ fontWeight: 'bold' }}>
+                                        <i className="bi bi-box-arrow-right me-3"></i>Log out
                                     </button>
                                 </li>
                             </>
                         ) : (
                             <>
-                                <li className="nav-item ms-lg-2 d-flex align-items-center">
-                                    <Link className="btn btn-sm shadow-sm" to="/login" style={{ backgroundColor: 'var(--accent-orange)', color: '#fff', borderRadius: '50px', padding: '8px 20px', fontWeight: 'bold', textDecoration: 'none' }}>Log In</Link>
+                                <hr className="d-lg-none w-100 my-2" style={{ borderColor: 'rgba(160, 64, 0, 0.2)' }} />
+                                <li className="nav-item ms-lg-2 d-none d-lg-flex align-items-center">
+                                    <Link className="btn shadow-none" to="/login" style={{ color: '#fff', padding: '8px', fontSize: '1.5rem' }}>
+                                        <i className="bi bi-person"></i>
+                                    </Link>
                                 </li>
-                                <li className="nav-item ms-lg-1 d-flex align-items-center">
-                                    <Link className="btn btn-sm shadow-sm" to="/register" style={{ backgroundColor: '#fff', color: 'var(--primary-brown)', borderRadius: '50px', padding: '8px 20px', fontWeight: 'bold', textDecoration: 'none' }}>Sign Up</Link>
+                                <li className="nav-item w-100 d-lg-none">
+                                    <Link className="nav-link" to="/login" onClick={() => setIsNavCollapsed(true)} style={{ fontWeight: 'bold' }}>
+                                        <i className="bi bi-box-arrow-in-right me-3"></i>Log In
+                                    </Link>
+                                </li>
+                                <li className="nav-item ms-lg-2 d-none d-lg-flex align-items-center">
+                                    <Link className="btn shadow-sm rounded-pill" to="/menu" style={{ backgroundColor: '#fff', color: 'var(--accent-orange)', padding: '8px 24px', fontWeight: 'bold', textDecoration: 'none' }}>
+                                        <i className="bi bi-cart3 me-2" style={{ fontSize: '1.2rem', color: 'var(--accent-orange)' }}></i>
+                                        Order Now
+                                    </Link>
                                 </li>
                             </>
                         )}
