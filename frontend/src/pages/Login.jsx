@@ -106,7 +106,47 @@ const Login = () => {
             setIsLoading(false);
         }
     };
+    const handleSocialLogin = (platform) => {
+        if (platform === 'Facebook') {
+            if (!window.FB) {
+                Swal.fire('Error', 'Facebook SDK not loaded yet. Please refresh.', 'error');
+                return;
+            }
 
+            window.FB.login((response) => {
+                if (response.authResponse) {
+                    const accessToken = response.authResponse.accessToken;
+                    setIsLoading(true);
+                    
+                    fetch(`${API_URL}/api/auth/facebook`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ accessToken })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.token) {
+                            login(data);
+                            navigate('/');
+                        } else {
+                            Swal.fire('Login Failed', data.error || 'Could not log in with Facebook', 'error');
+                        }
+                    })
+                    .catch(() => Swal.fire('Error', 'Server communication failed', 'error'))
+                    .finally(() => setIsLoading(false));
+                }
+            }, { scope: 'public_profile,email' });
+            return;
+        }
+
+        Swal.fire({
+            title: `${platform} Login`,
+            text: `The ${platform} login feature is currently being integrated. Please use your email and password for now!`,
+            icon: 'info',
+            confirmButtonColor: 'var(--primary-brown)',
+            timer: 3500
+        });
+    };
 
     return (
         <div
@@ -283,9 +323,8 @@ const Login = () => {
                     <div className="mt-4 text-center">
                         <p className="small mb-3" style={{ color: 'rgba(255,255,255,0.45)' }}>Or continue with</p>
                         <div className="d-flex justify-content-center gap-3 mb-4">
-                            <Link to="#" className="social-login-btn social-google"><i className="bi bi-google"></i></Link>
-                            <Link to="#" className="social-login-btn social-facebook"><i className="bi bi-facebook"></i></Link>
-                            <Link to="#" className="social-login-btn social-twitter"><i className="bi bi-twitter"></i></Link>
+                            <button type="button" onClick={() => handleSocialLogin('Google')} className="social-login-btn social-google border-0 bg-transparent p-0"><i className="bi bi-google"></i></button>
+                            <button type="button" onClick={() => handleSocialLogin('Facebook')} className="social-login-btn social-facebook border-0 bg-transparent p-0"><i className="bi bi-facebook"></i></button>
                         </div>
                         <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '16px' }}>
                             <span className="small" style={{ color: 'rgba(255,255,255,0.55)' }}>Don't have an account? </span>

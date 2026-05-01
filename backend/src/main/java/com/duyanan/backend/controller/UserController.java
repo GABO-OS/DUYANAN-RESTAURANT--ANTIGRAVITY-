@@ -1,8 +1,13 @@
-package com.duyanan.backend;
+package com.duyanan.backend.controller;
+
+import com.duyanan.backend.model.*;
+import com.duyanan.backend.repository.*;
+import com.duyanan.backend.util.*;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.util.Map;
@@ -119,11 +124,64 @@ public class UserController {
                     "secondsLeft", LOCKOUT_DURATION));
         }
 
-        int remaining = MAX_ATTEMPTS - attempts; // only computed when needed
+        int remaining = MAX_ATTEMPTS - attempts;
         return ResponseEntity.status(401).body(Map.of(
                 "error",
                 "Invalid email or password. " + remaining + " attempt" + (remaining == 1 ? "" : "s") + " remaining.",
                 "attemptsLeft", remaining));
+    }
+
+    // ── Facebook Login ────────────────────────────────────
+    @PostMapping("/facebook")
+    public ResponseEntity<?> facebookLogin(@RequestBody Map<String, String> body) {
+        String accessToken = body.get("accessToken");
+        if (accessToken == null) return ResponseEntity.badRequest().body(Map.of("error", "Access token required"));
+
+        try {
+            // 1. Call Facebook Graph API to verify token and get user details
+            String fbUrl = "https://graph.facebook.com/me?fields=id,first_name,last_name,email&access_token=" + accessToken;
+            RestTemplate restTemplate = new RestTemplate();
+            Map<String, Object> fbData = restTemplate.getForObject(fbUrl, Map.class);
+
+            if (fbData == null || fbData.get("id") == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid Facebook token"));
+            }
+
+            // Extract values and ensure they are effectively final for the lambda
+            String rawEmail = (String) fbData.get("email");
+            if (rawEmail == null) {
+                rawEmail = fbData.get("id") + "@facebook.com";
+            }
+            final String email = rawEmail;
+            
+            final String firstName = (String) fbData.get("first_name");
+            final String lastName = (String) fbData.get("last_name");
+
+            // 2. Find or create user
+            User user = userRepository.findByEmail(email).orElseGet(() -> {
+                User newUser = new User();
+                newUser.setEmail(email);
+                newUser.setFirstName(firstName != null ? firstName : "Facebook");
+                newUser.setLastName(lastName != null ? lastName : "User");
+                newUser.setRole("CUSTOMER");
+                newUser.setPassword(passwordEncoder.encode("FB_AUTH_" + System.currentTimeMillis()));
+                return userRepository.save(newUser);
+            });
+
+            // 3. Generate Token
+            String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole());
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Facebook login successful!",
+                    "firstName", user.getFirstName(),
+                    "lastName", user.getLastName(),
+                    "email", user.getEmail(),
+                    "role", user.getRole(),
+                    "token", token));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Facebook authentication failed: " + e.getMessage()));
+        }
     }
 
     // ── Current User ──────────────────────────────────────

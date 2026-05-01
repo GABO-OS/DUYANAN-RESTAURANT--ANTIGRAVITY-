@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import sfcImg from '../assets/img/sfc.png';
 import habhabImg from '../assets/img/habhab.jpg';
 import logoImg from '../assets/img/duyanan_logo.png';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import Swal from 'sweetalert2';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -12,6 +14,8 @@ const Menu = () => {
     const [products, setProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const { addToCart } = useCart();
+    const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
     const [activeCategory, setActiveCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -69,8 +73,66 @@ const Menu = () => {
         }
     };
 
+    const handleAddToCart = (product) => {
+        if (!isAuthenticated) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Login Required',
+                html: 'You need an account to add items to cart.<br/><br/>Please <b>log in</b> or <b>register</b> to continue.',
+                showCancelButton: true,
+                confirmButtonText: '🔑 Login',
+                cancelButtonText: 'Register',
+                confirmButtonColor: 'var(--primary-brown)',
+                cancelButtonColor: 'var(--accent-orange)',
+                reverseButtons: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    navigate('/login');
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    navigate('/register');
+                }
+            });
+            return;
+        }
+        addToCart(product);
+        Swal.fire({
+            toast: true,
+            position: 'bottom-end',
+            icon: 'success',
+            title: 'Added to cart',
+            text: `${product.name} has been added.`,
+            showConfirmButton: false,
+            timer: 2500,
+            timerProgressBar: true
+        });
+    };
+
     return (
         <div className="container-fluid px-0" style={{ minHeight: '100vh', paddingTop: 'var(--nav-height)', paddingBottom: '40px' }}>
+            {/* Guest info banner */}
+            {!isAuthenticated && (
+                <div style={{
+                    background: 'linear-gradient(90deg, #7B3F00 0%, #D35400 100%)',
+                    color: '#fff',
+                    textAlign: 'center',
+                    padding: '10px 20px',
+                    fontSize: '0.92rem',
+                    fontWeight: 500,
+                    letterSpacing: '0.01em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px'
+                }}>
+                    <i className="bi bi-eye-fill" style={{ fontSize: '1.1rem' }}></i>
+                    You&apos;re browsing as a guest — <strong>&nbsp;view only.</strong>&nbsp;
+                    <a href="/login" style={{ color: '#ffd580', textDecoration: 'underline', fontWeight: 700 }}>Log in</a>
+                    &nbsp;or&nbsp;
+                    <a href="/register" style={{ color: '#ffd580', textDecoration: 'underline', fontWeight: 700 }}>Register</a>
+                    &nbsp;to order.
+                </div>
+            )}
+
             {/* Sticky category nav bar */}
             <div className="sticky-top bg-white pt-4 pb-3 px-4 shadow-sm z-3" style={{ top: 'var(--nav-height)' }}>
                 <h2 className="mb-3" style={{ color: 'var(--primary-brown)', fontWeight: 'bold' }}>Duyanan Menu</h2>
@@ -165,21 +227,19 @@ const Menu = () => {
                                                         </p>
                                                         <button 
                                                             className="btn-outline-brand w-100" 
-                                                            style={{ fontSize: '0.9rem', padding: '8px 0' }}
-                                                            onClick={() => {
-                                                                addToCart(product);
-                                                                Swal.fire({
-                                                                    toast: true,
-                                                                    position: 'bottom-end',
-                                                                    icon: 'success',
-                                                                    title: 'Added to cart',
-                                                                    text: `${product.name} has been added.`,
-                                                                    showConfirmButton: false,
-                                                                    timer: 2500,
-                                                                    timerProgressBar: true
-                                                                });
+                                                            style={{ 
+                                                                fontSize: '0.9rem', 
+                                                                padding: '8px 0',
+                                                                opacity: isAuthenticated ? 1 : 0.75,
+                                                                cursor: isAuthenticated ? 'pointer' : 'not-allowed',
+                                                                position: 'relative'
                                                             }}
+                                                            onClick={() => handleAddToCart(product)}
+                                                            title={!isAuthenticated ? 'Login to add items to cart' : ''}
                                                         >
+                                                            {!isAuthenticated && (
+                                                                <i className="bi bi-lock-fill me-1" style={{ fontSize: '0.8rem' }}></i>
+                                                            )}
                                                             Add to cart
                                                         </button>
                                                     </div>

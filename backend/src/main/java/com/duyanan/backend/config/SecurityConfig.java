@@ -1,4 +1,6 @@
-package com.duyanan.backend;
+package com.duyanan.backend.config;
+
+import com.duyanan.backend.security.JwtAuthFilter;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

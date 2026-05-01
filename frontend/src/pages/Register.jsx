@@ -1,5 +1,7 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import Swal from 'sweetalert2';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import duyananBg from '../assets/img/duyanan_bg.jpg';
 
@@ -16,6 +18,7 @@ const Register = () => {
     const [nameErrors, setNameErrors] = useState({ firstName: '', lastName: '' });
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -85,6 +88,56 @@ const Register = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleSocialLogin = (platform) => {
+        if (platform === 'Facebook') {
+            if (!window.FB) {
+                Swal.fire('Error', 'Facebook SDK not loaded yet. Please refresh.', 'error');
+                return;
+            }
+
+            window.FB.login((response) => {
+                if (response.authResponse) {
+                    const accessToken = response.authResponse.accessToken;
+                    setIsLoading(true);
+                    
+                    fetch(`${API_URL}/api/auth/facebook`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ accessToken })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.token) {
+                            login(data);
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Welcome!',
+                                text: `Logged in as ${data.firstName}`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                navigate('/');
+                            });
+                        } else {
+                            Swal.fire('Link Failed', data.error || 'Could not connect Facebook', 'error');
+                        }
+                    })
+                    .catch(() => Swal.fire('Error', 'Server communication failed', 'error'))
+                    .finally(() => setIsLoading(false));
+                }
+            }, { scope: 'public_profile,email' });
+            return;
+        }
+
+        Swal.fire({
+            title: `${platform} Registration`,
+            text: `Social registration via ${platform} is currently under development. Please use the form for now!`,
+            icon: 'info',
+            confirmButtonColor: 'var(--primary-brown)',
+            timer: 3500
+        });
     };
 
     const glassInput = { background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', borderRadius: '12px' };
@@ -255,9 +308,16 @@ const Register = () => {
                         </button>
                     </form>
 
-                    <div className="mt-4 text-center pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}>
-                        <span className="small" style={{ color: 'rgba(255,255,255,0.55)' }}>Already have an account? </span>
-                        <Link to="/login" className="text-decoration-none fw-bold small" style={{ color: 'rgba(255,200,120,0.9)' }}>Log In</Link>
+                    <div className="mt-4 text-center">
+                        <p className="small mb-3" style={{ color: 'rgba(255,255,255,0.45)' }}>Or register with</p>
+                        <div className="d-flex justify-content-center gap-3 mb-4">
+                            <button type="button" onClick={() => handleSocialLogin('Google')} className="social-login-btn social-google border-0 bg-transparent p-0"><i className="bi bi-google"></i></button>
+                            <button type="button" onClick={() => handleSocialLogin('Facebook')} className="social-login-btn social-facebook border-0 bg-transparent p-0"><i className="bi bi-facebook"></i></button>
+                        </div>
+                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '16px' }}>
+                            <span className="small" style={{ color: 'rgba(255,255,255,0.55)' }}>Already have an account? </span>
+                            <Link to="/login" className="text-decoration-none fw-bold small" style={{ color: 'rgba(255,200,120,0.9)' }}>Log In</Link>
+                        </div>
                     </div>
                 </div>
             </div>

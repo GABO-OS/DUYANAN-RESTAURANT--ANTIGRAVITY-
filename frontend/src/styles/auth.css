@@ -1,4 +1,4 @@
-﻿/* Authentication Layout */
+/* Authentication Layout */
 .auth-page {
   min-height: 100vh;
   display: flex;
@@ -83,7 +83,6 @@
 
 .social-google   { background-color: #db4437; }
 .social-facebook { background-color: #4267B2; }
-.social-twitter  { background-color: #1DA1F2; }
 
 /* Hide browser's native password reveal button (Edge / Chrome) */
 input[type="password"]::-ms-reveal,

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
+import Swal from 'sweetalert2';
 import duyananBg from '../assets/img/duyanan_bg.jpg';
 import sfcImg from '../assets/img/sfc.png';
 import habhabImg from '../assets/img/habhab.jpg';
@@ -39,8 +41,34 @@ const Home = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { isAuthenticated, user } = useAuth();
+    const { addToCart } = useCart();
     const [alert, setAlert] = useState(null);
     const [isAlertVisible, setIsAlertVisible] = useState(false);
+
+    const handleGuestAddToCart = (itemName) => {
+        if (!isAuthenticated) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Login Required',
+                html: `You need an account to order <b>${itemName}</b>.<br/><br/>Please <b>log in</b> or <b>register</b> to continue.`,
+                showCancelButton: true,
+                confirmButtonText: '🔑 Login',
+                cancelButtonText: 'Register',
+                confirmButtonColor: '#7B3F00',
+                cancelButtonColor: '#D35400',
+            }).then((result) => {
+                if (result.isConfirmed) navigate('/login');
+                else if (result.dismiss === Swal.DismissReason.cancel) navigate('/register');
+            });
+            return;
+        }
+        // When real product data is used, call addToCart(product) here
+        Swal.fire({
+            toast: true, position: 'bottom-end', icon: 'success',
+            title: 'Added to cart', text: `${itemName} has been added.`,
+            showConfirmButton: false, timer: 2500, timerProgressBar: true
+        });
+    };
 
     // Redirect admins to dashboard if they land on Home
     useEffect(() => {
@@ -296,7 +324,18 @@ const Home = () => {
                                                 <p className="card-text text-muted mb-3">
                                                     <span style={{ color: 'var(--accent-orange)', fontWeight: 'bold', fontSize: '1.2rem' }}>{item.price}</span>
                                                 </p>
-                                                <button className="btn-outline-brand w-75">Add to cart</button>
+                                                <button 
+                                                    className="btn-outline-brand w-75"
+                                                    onClick={() => handleGuestAddToCart(item.name)}
+                                                    title={!isAuthenticated ? 'Login to add items to cart' : ''}
+                                                    style={{
+                                                        opacity: isAuthenticated ? 1 : 0.75,
+                                                        cursor: isAuthenticated ? 'pointer' : 'not-allowed'
+                                                    }}
+                                                >
+                                                    {!isAuthenticated && <i className="bi bi-lock-fill me-1" style={{ fontSize: '0.8rem' }}></i>}
+                                                    Add to cart
+                                                </button>
                                             </div>
                                         </div>
                                     </div>

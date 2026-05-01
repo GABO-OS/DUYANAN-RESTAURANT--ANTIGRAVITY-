@@ -1,4 +1,4 @@
-package com.duyanan.backend;
+package com.duyanan.backend.config;
 
 // CORS is now configured in SecurityConfig.java
 // This class is kept empty to avoid breaking any references.

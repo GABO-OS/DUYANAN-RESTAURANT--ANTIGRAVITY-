@@ -1,4 +1,4 @@
-package com.duyanan.backend;
+package com.duyanan.backend.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

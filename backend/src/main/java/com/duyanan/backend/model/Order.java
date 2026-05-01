@@ -1,4 +1,4 @@
-package com.duyanan.backend;
+package com.duyanan.backend.model;
 
 import jakarta.persistence.*;
 import lombok.Data;

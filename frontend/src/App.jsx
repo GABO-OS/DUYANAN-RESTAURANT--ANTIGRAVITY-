@@ -28,27 +28,12 @@ function App() {
                             <Route path="/login" element={<Login />} />
                             <Route path="/register" element={<Register />} />
 
-                            {/* Protected routes — require login */}
-                            <Route path="/" element={
-                                <ProtectedRoute>
-                                    <Home />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/menu" element={
-                                <ProtectedRoute>
-                                    <Menu />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/about" element={
-                                <ProtectedRoute>
-                                    <About />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="/reservations" element={
-                                <ProtectedRoute>
-                                    <Reservations />
-                                </ProtectedRoute>
-                            } />
+                            {/* Public routes — visible to everyone including guests */}
+                            <Route path="/" element={<Home />} />
+                            <Route path="/menu" element={<Menu />} />
+                            <Route path="/about" element={<About />} />
+                            <Route path="/reservations" element={<Reservations />} />
+
                             {/* Protected routes — require login */}
                             <Route path="/cart" element={
                                 <ProtectedRoute>

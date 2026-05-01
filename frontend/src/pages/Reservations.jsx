@@ -162,6 +162,32 @@ const Reservations = () => {
                                 Book a table to start your session
                             </p>
                         </div>
+
+                        {/* Guest banner */}
+                        {!isAuthenticated && (
+                            <div style={{
+                                background: 'linear-gradient(90deg, #7B3F00, #D35400)',
+                                color: '#fff',
+                                borderRadius: '10px',
+                                padding: '14px 20px',
+                                marginBottom: '24px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                boxShadow: '0 4px 14px rgba(211,84,0,0.25)'
+                            }}>
+                                <i className="bi bi-shield-lock-fill" style={{ fontSize: '1.5rem', flexShrink: 0 }}></i>
+                                <div>
+                                    <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>You&apos;re viewing as a guest</div>
+                                    <div style={{ fontSize: '0.83rem', opacity: 0.9 }}>
+                                        <a href="/login" style={{ color: '#ffd580', fontWeight: 700, textDecoration: 'underline' }}>Log in</a>
+                                        {' '}or{' '}
+                                        <a href="/register" style={{ color: '#ffd580', fontWeight: 700, textDecoration: 'underline' }}>Register</a>
+                                        {' '}to make a reservation.
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         
                         <form onSubmit={handleSubmit}>
                             {/* Seating Type */}
@@ -235,19 +261,28 @@ const Reservations = () => {
                             </div>
 
                             {/* Submit */}
-                            <button type="submit" style={{ 
-                                width: '100%', 
-                                padding: '12px 0', 
-                                fontSize: '1.1rem', 
-                                borderRadius: '6px', 
-                                backgroundColor: 'var(--accent-orange)', 
-                                color: '#fff', 
-                                border: 'none', 
-                                fontWeight: 'bold',
-                                boxShadow: '0 4px 6px rgba(211, 84, 0, 0.2)',
-                                transition: 'background-color 0.2s'
-                            }}>
-                                Confirm Reservation
+                            <button 
+                                type="submit"
+                                style={{ 
+                                    width: '100%', 
+                                    padding: '12px 0', 
+                                    fontSize: '1.1rem', 
+                                    borderRadius: '6px', 
+                                    backgroundColor: isAuthenticated ? 'var(--accent-orange)' : '#aaa', 
+                                    color: '#fff', 
+                                    border: 'none', 
+                                    fontWeight: 'bold',
+                                    boxShadow: isAuthenticated ? '0 4px 6px rgba(211, 84, 0, 0.2)' : 'none',
+                                    transition: 'background-color 0.2s',
+                                    cursor: isAuthenticated ? 'pointer' : 'not-allowed',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                {!isAuthenticated && <i className="bi bi-lock-fill"></i>}
+                                {isAuthenticated ? 'Confirm Reservation' : 'Login to Reserve'}
                             </button>
                         </form>
                     </div>

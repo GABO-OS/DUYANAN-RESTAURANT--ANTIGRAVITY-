@@ -1,4 +1,6 @@
-package com.duyanan.backend;
+package com.duyanan.backend.security;
+
+import com.duyanan.backend.util.JwtUtil;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
